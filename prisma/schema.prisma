@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                   Int               @id @default(autoincrement())
+  email                String?           @unique
+  phone                String?           @unique
+  password_hash        String
+  name                 String?
+  avatar_url           String?
+  created_at           DateTime          @default(now())
+  default_net_income   Float             @default(0)
+  default_rent         Float             @default(0)
+  default_savings_goal Float             @default(0)
+  budgetMonths         BudgetMonth[]
+  expenses             Expense[]
+  categories           UserCategory[]
+  passwordResets       PasswordReset[]
+  recurringExpenses    RecurringExpense[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model BudgetMonth {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  year          Int
+  month         Int
+  net_income    Float     @default(0)
+  rent          Float     @default(0)
+  savings_goal  Float     @default(0)
+  user          User      @relation(fields: [user_id], references: [id])
+  expenses      Expense[]
+
+  @@unique([user_id, year, month])
+}
+
+model Expense {
+  id              Int         @id @default(autoincrement())
+  user_id         Int
+  budget_month_id Int
+  description     String
+  amount          Float
+  date            DateTime
+  category        String
+  created_at      DateTime    @default(now())
+  user            User        @relation(fields: [user_id], references: [id])
+  budgetMonth     BudgetMonth @relation(fields: [budget_month_id], references: [id])
+
+  @@index([user_id, budget_month_id])
+}
+
+model UserCategory {
+  id         Int    @id @default(autoincrement())
+  user_id    Int
+  name       String
+  slug       String
+  color      String
+  sort_order Int    @default(0)
+  user       User   @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, slug])
+  @@index([user_id])
+}
+
+model RecurringExpense {
+  id          Int    @id @default(autoincrement())
+  user_id     Int
+  description String
+  amount      Float
+  category    String
+  sort_order  Int    @default(0)
+  user        User   @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
+
+model PasswordReset {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  otp        String
+  expires_at DateTime
+  used       Boolean  @default(false)
+  user       User     @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
