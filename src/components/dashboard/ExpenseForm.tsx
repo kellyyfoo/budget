@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import DatePicker from '@/components/ui/DatePicker'
@@ -20,6 +20,8 @@ function todayISO() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+const GAP = 8 // gap-2 = 8px
+
 export default function ExpenseForm({ initial, year, month, categories, onSubmit, onCancel }: ExpenseFormProps) {
   const [description, setDescription] = useState(initial?.description ?? '')
   const [amount, setAmount] = useState(initial?.amount !== undefined ? String(initial.amount) : '')
@@ -27,6 +29,35 @@ export default function ExpenseForm({ initial, year, month, categories, onSubmit
   const [category, setCategory] = useState<string>(initial?.category ?? '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rows, setRows] = useState<UserCategory[][]>([categories])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const measureRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current || !measureRef.current) return
+    const containerWidth = containerRef.current.clientWidth
+    const pillEls = Array.from(measureRef.current.children) as HTMLElement[]
+    const widths = pillEls.map(el => el.getBoundingClientRect().width)
+
+    const newRows: UserCategory[][] = []
+    let row: UserCategory[] = []
+    let rowWidth = 0
+
+    categories.forEach((cat, i) => {
+      const w = widths[i]
+      const needed = row.length > 0 ? GAP + w : w
+      if (row.length > 0 && rowWidth + needed > containerWidth) {
+        newRows.push(row)
+        row = [cat]
+        rowWidth = w
+      } else {
+        row.push(cat)
+        rowWidth += needed
+      }
+    })
+    if (row.length > 0) newRows.push(row)
+    setRows(newRows)
+  }, [categories])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -67,21 +98,36 @@ export default function ExpenseForm({ initial, year, month, categories, onSubmit
         <label className="block text-[10px] tracking-[0.18em] uppercase text-[#111111] font-medium mb-3">
           Category
         </label>
-        <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => (
-            <button
-              key={cat.slug}
-              type="button"
-              onClick={() => setCategory(cat.slug)}
-              className={`px-3 py-1.5 rounded-full text-[9px] tracking-[0.1em] uppercase font-medium transition-all duration-400 cursor-pointer whitespace-nowrap ${
-                category === cat.slug
-                  ? 'bg-[#111111] text-[#FAFAF8] px-5'
-                  : 'border border-[#E5E5E0] text-[#999999] hover:bg-[#111111] hover:text-[#FAFAF8] hover:border-[#111111] hover:px-5'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+        <div ref={containerRef} className="relative">
+          {/* Hidden pills at px-5 for measuring expanded widths */}
+          <div ref={measureRef} className="absolute invisible pointer-events-none flex gap-2" aria-hidden="true">
+            {categories.map(cat => (
+              <button key={cat.slug} className="px-5 py-1.5 rounded-full text-[9px] tracking-[0.1em] uppercase font-medium whitespace-nowrap">
+                {cat.name}
+              </button>
+            ))}
+          </div>
+          {/* Pre-computed rows — each row is non-wrapping flex sized for px-5 pills */}
+          <div className="space-y-2">
+            {rows.map((row, ri) => (
+              <div key={ri} className="flex gap-2">
+                {row.map(cat => (
+                  <button
+                    key={cat.slug}
+                    type="button"
+                    onClick={() => setCategory(cat.slug)}
+                    className={`px-3 py-1.5 rounded-full text-[9px] tracking-[0.1em] uppercase font-medium transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                      category === cat.slug
+                        ? 'px-5 bg-[#111111] text-[#FAFAF8] border border-[#111111]'
+                        : 'border border-[#E5E5E0] text-[#999999] hover:px-5 hover:bg-[#111111] hover:text-[#FAFAF8] hover:border-[#111111]'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

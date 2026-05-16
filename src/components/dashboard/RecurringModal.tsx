@@ -143,7 +143,7 @@ export default function RecurringModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Recurring">
+    <Modal open={open} onClose={onClose} title="Set Monthly Defaults">
       {/* Monthly Defaults */}
       <form onSubmit={saveDefaults} className="mb-8">
         <p className="text-[9px] tracking-[0.2em] uppercase text-[#111111] font-medium mb-5">Monthly Defaults</p>

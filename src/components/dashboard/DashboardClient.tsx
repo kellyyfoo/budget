@@ -238,7 +238,7 @@ export default function DashboardClient({
                   onClick={() => { setShowRecurring(true); setShowProfileMenu(false) }}
                   className="w-full text-left px-4 py-2.5 text-[10px] tracking-[0.15em] uppercase text-[#111111] hover:bg-[#F5F5F0] transition-colors cursor-pointer"
                 >
-                  Recurring
+                  Set Monthly Defaults
                 </button>
                 <div className="border-t border-[#E5E5E0] my-1" />
                 <button
