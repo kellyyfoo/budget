@@ -12,6 +12,7 @@ import ProfileModal from './ProfileModal'
 import RecurringModal from './RecurringModal'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -51,6 +52,7 @@ export default function DashboardClient({
   const [showManage, setShowManage] = useState(false)
   const [showRecurring, setShowRecurring] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -65,7 +67,13 @@ export default function DashboardClient({
 
   const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0)
 
+  const trimmedQuery = searchQuery.trim().toLowerCase()
+  const filteredExpenses = trimmedQuery
+    ? expenses.filter((e) => e.description.toLowerCase().includes(trimmedQuery))
+    : expenses
+
   async function fetchMonth(y: number, m: number) {
+    setSearchQuery('')
     const [budgetRes, expensesRes] = await Promise.all([
       fetch(`/api/budget?year=${y}&month=${m}`),
       fetch(`/api/expenses?year=${y}&month=${m}`),
@@ -279,11 +287,23 @@ export default function DashboardClient({
 
       {/* Expense Table */}
       <div className="flex-1 px-10 pt-2 pb-12">
+        <div className="mb-4 max-w-sm">
+          <Input
+            type="search"
+            placeholder="Search by description…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Search expenses by description"
+          />
+        </div>
         <ExpenseTable
-          expenses={expenses}
+          expenses={filteredExpenses}
           categories={categories}
           onEdit={(expense) => setEditingExpense(expense)}
           onDelete={handleDeleteExpense}
+          emptyMessage={
+            trimmedQuery ? `No expenses match “${searchQuery.trim()}”.` : undefined
+          }
         />
       </div>
 

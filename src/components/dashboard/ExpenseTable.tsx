@@ -8,13 +8,16 @@ interface ExpenseTableProps {
   categories: UserCategory[]
   onEdit: (expense: Expense) => void
   onDelete: (id: number) => void
+  emptyMessage?: string
 }
 
-export default function ExpenseTable({ expenses, categories, onEdit, onDelete }: ExpenseTableProps) {
+export default function ExpenseTable({ expenses, categories, onEdit, onDelete, emptyMessage }: ExpenseTableProps) {
   if (expenses.length === 0) {
     return (
       <div className="py-20 text-center">
-        <p className="text-sm font-light text-[#BBBBBB] tracking-wide">No expenses this month.</p>
+        <p className="text-sm font-light text-[#BBBBBB] tracking-wide">
+          {emptyMessage ?? 'No expenses this month.'}
+        </p>
       </div>
     )
   }

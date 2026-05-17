@@ -21,7 +21,6 @@ model User {
   budgetMonths         BudgetMonth[]
   expenses             Expense[]
   categories           UserCategory[]
-  passwordResets       PasswordReset[]
   recurringExpenses    RecurringExpense[]
 
   @@index([email])
@@ -78,17 +77,6 @@ model RecurringExpense {
   category    String
   sort_order  Int    @default(0)
   user        User   @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-}
-
-model PasswordReset {
-  id         Int      @id @default(autoincrement())
-  user_id    Int
-  otp        String
-  expires_at DateTime
-  used       Boolean  @default(false)
-  user       User     @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
 }

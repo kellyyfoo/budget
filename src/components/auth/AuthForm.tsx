@@ -98,17 +98,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
             />
           )}
 
-          {mode === 'login' && (
-            <div className="-mt-3 text-right">
-              <Link
-                href="/forgot-password"
-                className="text-[10px] tracking-[0.1em] uppercase text-[#111111] hover:opacity-60 transition-opacity"
-              >
-                Forgot password?
-              </Link>
-            </div>
-          )}
-
           {error && (
             <p className="text-[11px] text-red-500 tracking-wide">{error}</p>
           )}
