@@ -53,7 +53,6 @@ export default function DashboardClient({
   const [showManage, setShowManage] = useState(false)
   const [showRecurring, setShowRecurring] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
