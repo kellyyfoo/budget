@@ -46,6 +46,7 @@ export default function DashboardClient({
   const [categories, setCategories] = useState<UserCategory[]>(initialCategories)
   const [profile, setProfile] = useState<UserProfile | null>(initialProfile)
   const [recurring, setRecurring] = useState<RecurringExpense[]>(initialRecurring)
+  const [searchQuery, setSearchQuery] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showProfile, setShowProfile] = useState(false)
@@ -73,12 +74,14 @@ export default function DashboardClient({
     : expenses
 
   async function fetchMonth(y: number, m: number) {
-    setSearchQuery('')
-    const [budgetRes, expensesRes] = await Promise.all([
-      fetch(`/api/budget?year=${y}&month=${m}`),
+    // Fetch budget first so the BudgetMonth is created (and recurring expenses seeded)
+    // before the expenses GET runs — prevents a race condition on first visit to a new month.
+    const budgetRes = await fetch(`/api/budget?year=${y}&month=${m}`)
+    const [budget, expensesRes] = await Promise.all([
+      budgetRes.json(),
       fetch(`/api/expenses?year=${y}&month=${m}`),
     ])
-    setBudget(await budgetRes.json())
+    setBudget(budget)
     setExpenses(await expensesRes.json())
   }
 
@@ -87,6 +90,7 @@ export default function DashboardClient({
     const y = month === 1 ? year - 1 : year
     setYear(y)
     setMonth(m)
+    setSearchQuery('')
     fetchMonth(y, m)
   }
 
@@ -95,6 +99,7 @@ export default function DashboardClient({
     const y = month === 12 ? year + 1 : year
     setYear(y)
     setMonth(m)
+    setSearchQuery('')
     fetchMonth(y, m)
   }
 
@@ -285,6 +290,31 @@ export default function DashboardClient({
         </Button>
       </div>
 
+      {/* Search Row */}
+      <div className="px-10 pt-4 pb-2">
+        <div className="relative inline-flex items-center">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search expenses..."
+            className="bg-transparent border-b border-[#E5E5E0] focus:border-[#111111] outline-none py-1 pr-5 text-[11px] font-light text-[#111111] placeholder:text-[#BBBBBB] transition-colors w-48"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-0 text-[#111111] hover:opacity-60 transition-opacity cursor-pointer"
+              aria-label="Clear search"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Expense Table */}
       <div className="flex-1 px-10 pt-2 pb-12">
         <div className="mb-4 max-w-sm">
@@ -297,7 +327,7 @@ export default function DashboardClient({
           />
         </div>
         <ExpenseTable
-          expenses={filteredExpenses}
+          expenses={searchQuery ? expenses.filter((e) => e.description.toLowerCase().includes(searchQuery.toLowerCase())) : expenses}
           categories={categories}
           onEdit={(expense) => setEditingExpense(expense)}
           onDelete={handleDeleteExpense}
