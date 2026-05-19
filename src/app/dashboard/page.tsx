@@ -72,6 +72,8 @@ export default async function DashboardPage() {
     }
   }
 
+  if (!budgetMonth) throw new Error('Unable to initialize budget month')
+
   const expenseRecords = await prisma.expense.findMany({
     where: { budget_month_id: budgetMonth.id, user_id: session.userId },
     orderBy: { date: 'desc' },
