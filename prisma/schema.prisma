@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id                   Int               @id @default(autoincrement())
+  username             String?           @unique
   email                String?           @unique
   phone                String?           @unique
   password_hash        String
@@ -22,9 +23,26 @@ model User {
   expenses             Expense[]
   categories           UserCategory[]
   recurringExpenses    RecurringExpense[]
+  sentRequests         Friendship[]       @relation("SentRequests")
+  receivedRequests     Friendship[]       @relation("ReceivedRequests")
 
+  @@index([username])
   @@index([email])
   @@index([phone])
+}
+
+model Friendship {
+  id          Int      @id @default(autoincrement())
+  requesterId Int
+  addresseeId Int
+  status      String   @default("pending")
+  created_at  DateTime @default(now())
+  requester   User     @relation("SentRequests",     fields: [requesterId], references: [id])
+  addressee   User     @relation("ReceivedRequests", fields: [addresseeId], references: [id])
+
+  @@unique([requesterId, addresseeId])
+  @@index([requesterId])
+  @@index([addresseeId])
 }
 
 model BudgetMonth {

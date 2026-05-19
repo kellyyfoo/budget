@@ -14,14 +14,17 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ open, onClose, profile, onUpdate }: ProfileModalProps) {
-  const [name, setName] = useState(profile?.name ?? '')
+  const nameParts = (profile?.name ?? '').split(' ')
+  const [firstName, setFirstName] = useState(nameParts[0] ?? '')
+  const [lastName, setLastName] = useState(nameParts.slice(1).join(' '))
+  const [username, setUsername] = useState(profile?.username ?? '')
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const initial = (profile?.name ?? profile?.email ?? '?')[0].toUpperCase()
+  const initial = (profile?.name ?? profile?.email ?? profile?.username ?? '?')[0].toUpperCase()
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -39,7 +42,7 @@ export default function ProfileModal({ open, onClose, profile, onUpdate }: Profi
       }
       const data = await res.json()
       setAvatarUrl(data.avatar_url)
-      if (profile) onUpdate({ ...profile, avatar_url: data.avatar_url })
+      if (profile) onUpdate({ ...profile, avatar_url: data.avatar_url, username: profile.username })
     } finally {
       setUploading(false)
     }
@@ -53,7 +56,7 @@ export default function ProfileModal({ open, onClose, profile, onUpdate }: Profi
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() || null }),
+        body: JSON.stringify({ name: [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || null, username: username.trim() || null }),
       })
       if (!res.ok) {
         const err = await res.json()
@@ -113,19 +116,28 @@ export default function ProfileModal({ open, onClose, profile, onUpdate }: Profi
         </div>
 
         <Input
-          label="Name"
+          label="First Name"
           type="text"
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="Kelly"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
         />
 
-        <div className="space-y-1">
-          <p className="text-[10px] tracking-[0.18em] uppercase text-[#111111] font-medium">Email / Phone</p>
-          <p className="text-sm font-light text-[#111111]">
-            {profile?.email ?? profile?.phone ?? '—'}
-          </p>
-        </div>
+        <Input
+          label="Last Name"
+          type="text"
+          placeholder="Foo"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
+
+        <Input
+          label="Username"
+          type="text"
+          placeholder="your_username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
 
         {error && <p className="text-[11px] text-red-500 tracking-wide">{error}</p>}
 

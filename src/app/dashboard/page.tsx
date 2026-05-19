@@ -25,6 +25,7 @@ export default async function DashboardPage() {
       avatar_url: true,
       email: true,
       phone: true,
+      username: true,
       default_net_income: true,
       default_rent: true,
       default_savings_goal: true,
@@ -37,18 +38,26 @@ export default async function DashboardPage() {
       orderBy: { sort_order: 'asc' },
     })
 
-    budgetMonth = await prisma.budgetMonth.create({
-      data: {
-        user_id: session.userId,
-        year,
-        month,
-        net_income: userRecord?.default_net_income ?? 0,
-        rent: userRecord?.default_rent ?? 0,
-        savings_goal: userRecord?.default_savings_goal ?? 0,
-      },
-    })
+    let isNew = false
+    try {
+      budgetMonth = await prisma.budgetMonth.create({
+        data: {
+          user_id: session.userId,
+          year,
+          month,
+          net_income: userRecord?.default_net_income ?? 0,
+          rent: userRecord?.default_rent ?? 0,
+          savings_goal: userRecord?.default_savings_goal ?? 0,
+        },
+      })
+      isNew = true
+    } catch {
+      budgetMonth = await prisma.budgetMonth.findUnique({
+        where: { user_id_year_month: { user_id: session.userId, year, month } },
+      })
+    }
 
-    if (recurringItems.length > 0) {
+    if (isNew && recurringItems.length > 0) {
       const date = new Date(Date.UTC(year, month - 1, 1))
       await prisma.expense.createMany({
         data: recurringItems.map((re) => ({
@@ -120,6 +129,7 @@ export default async function DashboardPage() {
         avatar_url: userRecord.avatar_url,
         email: userRecord.email,
         phone: userRecord.phone,
+        username: userRecord.username,
         default_net_income: userRecord.default_net_income,
         default_rent: userRecord.default_rent,
         default_savings_goal: userRecord.default_savings_goal,

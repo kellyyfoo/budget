@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 
 const PROTECTED_PAGES = ['/dashboard']
-const PROTECTED_API = ['/api/budget', '/api/expenses', '/api/categories', '/api/profile', '/api/recurring']
+const PROTECTED_API = ['/api/budget', '/api/expenses', '/api/categories', '/api/profile', '/api/recurring', '/api/friends', '/api/users']
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -27,5 +27,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/budget/:path*', '/api/expenses/:path*', '/api/categories/:path*', '/api/profile/:path*', '/api/recurring/:path*'],
+  matcher: ['/dashboard/:path*', '/api/budget/:path*', '/api/expenses/:path*', '/api/categories/:path*', '/api/profile/:path*', '/api/recurring/:path*', '/api/friends/:path*', '/api/users/:path*'],
 }

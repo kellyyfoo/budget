@@ -5,14 +5,14 @@ import { signToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const { emailOrPhone, password } = body
+  const { usernameOrEmail, password } = body
 
-  if (!emailOrPhone || !password) {
-    return NextResponse.json({ error: 'Email/phone and password are required' }, { status: 400 })
+  if (!usernameOrEmail || !password) {
+    return NextResponse.json({ error: 'Username/email and password are required' }, { status: 400 })
   }
 
   const user = await prisma.user.findFirst({
-    where: { OR: [{ email: emailOrPhone }, { phone: emailOrPhone }] },
+    where: { OR: [{ username: usernameOrEmail }, { email: usernameOrEmail }] },
   })
 
   if (!user || !(await comparePassword(password, user.password_hash))) {

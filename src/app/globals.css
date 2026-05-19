@@ -12,3 +12,8 @@ body {
   color: #111111;
 }
 
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: #AAAAAA; border-radius: 0; }
+html { scrollbar-color: #AAAAAA transparent; scrollbar-width: thin; }
+

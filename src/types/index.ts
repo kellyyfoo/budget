@@ -32,6 +32,7 @@ export interface UserProfile {
   avatar_url: string | null
   email: string | null
   phone: string | null
+  username: string | null
   default_net_income: number
   default_rent: number
   default_savings_goal: number

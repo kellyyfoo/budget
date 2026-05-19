@@ -21,18 +21,26 @@ export async function GET(request: NextRequest) {
       prisma.recurringExpense.findMany({ where: { user_id: userId }, orderBy: { sort_order: 'asc' } }),
     ])
 
-    budgetMonth = await prisma.budgetMonth.create({
-      data: {
-        user_id: userId,
-        year,
-        month,
-        net_income: user?.default_net_income ?? 0,
-        rent: user?.default_rent ?? 0,
-        savings_goal: user?.default_savings_goal ?? 0,
-      },
-    })
+    let isNew = false
+    try {
+      budgetMonth = await prisma.budgetMonth.create({
+        data: {
+          user_id: userId,
+          year,
+          month,
+          net_income: user?.default_net_income ?? 0,
+          rent: user?.default_rent ?? 0,
+          savings_goal: user?.default_savings_goal ?? 0,
+        },
+      })
+      isNew = true
+    } catch {
+      budgetMonth = await prisma.budgetMonth.findUnique({
+        where: { user_id_year_month: { user_id: userId, year, month } },
+      })
+    }
 
-    if (recurringItems.length > 0) {
+    if (isNew && recurringItems.length > 0) {
       const date = new Date(Date.UTC(year, month - 1, 1))
       await prisma.expense.createMany({
         data: recurringItems.map((re) => ({

@@ -10,6 +10,8 @@ import ExpenseForm from './ExpenseForm'
 import ManageCategories from './ManageCategories'
 import ProfileModal from './ProfileModal'
 import RecurringModal from './RecurringModal'
+import FriendActivitySidebar from './FriendActivitySidebar'
+import FriendsModal from './FriendsModal'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -52,6 +54,7 @@ export default function DashboardClient({
   const [showProfile, setShowProfile] = useState(false)
   const [showManage, setShowManage] = useState(false)
   const [showRecurring, setShowRecurring] = useState(false)
+  const [showFriends, setShowFriends] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
@@ -172,7 +175,8 @@ export default function DashboardClient({
   const firstName = profile?.name?.split(' ')[0]
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
+    <div className="h-screen bg-[#FAFAF8] flex flex-row overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-y-auto min-w-0">
       {/* Header */}
       <header className="border-b border-[#E5E5E0] px-10 py-5 flex items-center justify-between">
         <span className="text-base tracking-[0.5em] uppercase font-bold text-[#111111]">
@@ -252,6 +256,12 @@ export default function DashboardClient({
                 >
                   Set Monthly Defaults
                 </button>
+                <button
+                  onClick={() => { setShowFriends(true); setShowProfileMenu(false) }}
+                  className="w-full text-left px-4 py-2.5 text-[10px] tracking-[0.15em] uppercase text-[#111111] hover:bg-[#F5F5F0] transition-colors cursor-pointer"
+                >
+                  Friends
+                </button>
                 <div className="border-t border-[#E5E5E0] my-1" />
                 <button
                   onClick={handleLogout}
@@ -316,15 +326,6 @@ export default function DashboardClient({
 
       {/* Expense Table */}
       <div className="flex-1 px-10 pt-2 pb-12">
-        <div className="mb-4 max-w-sm">
-          <Input
-            type="search"
-            placeholder="Search by description…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search expenses by description"
-          />
-        </div>
         <ExpenseTable
           expenses={searchQuery ? expenses.filter((e) => e.description.toLowerCase().includes(searchQuery.toLowerCase())) : expenses}
           categories={categories}
@@ -403,6 +404,12 @@ export default function DashboardClient({
           setShowProfile(false)
         }}
       />
+
+      {/* Friends */}
+      <FriendsModal open={showFriends} onClose={() => setShowFriends(false)} />
+    </div>
+
+    <FriendActivitySidebar onOpenFriends={() => setShowFriends(true)} />
     </div>
   )
 }

@@ -12,7 +12,9 @@ interface AuthFormProps {
 
 export default function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter()
-  const [emailOrPhone, setEmailOrPhone] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -29,14 +31,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
     setLoading(true)
     try {
-      const isEmail = emailOrPhone.includes('@')
-      const body =
-        mode === 'register'
-          ? {
-              [isEmail ? 'email' : 'phone']: emailOrPhone,
-              password,
-            }
-          : { emailOrPhone, password }
+      const body = mode === 'register'
+        ? { firstName: firstName.trim(), lastName: lastName.trim(), username, password }
+        : { usernameOrEmail: username, password }
 
       const res = await fetch(`/api/auth/${mode}`, {
         method: 'POST',
@@ -68,12 +65,34 @@ export default function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-7">
+          {mode === 'register' && (
+            <>
+              <Input
+                label="First Name"
+                type="text"
+                placeholder="Kelly"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                autoComplete="given-name"
+                required
+              />
+              <Input
+                label="Last Name"
+                type="text"
+                placeholder="Foo"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                autoComplete="family-name"
+                required
+              />
+            </>
+          )}
           <Input
-            label={mode === 'register' ? 'Email or Phone Number' : 'Email or Phone'}
+            label="Username"
             type="text"
-            placeholder={mode === 'register' ? 'you@example.com or +1 555 0100' : 'you@example.com'}
-            value={emailOrPhone}
-            onChange={(e) => setEmailOrPhone(e.target.value)}
+            placeholder="your_username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
             required
           />
